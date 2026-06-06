@@ -96,7 +96,7 @@ services:
     environment:
       KAFKA_HOST: kafka
       KAFKA_PORT: 9092
-      MISTRAL_API_KEY: REXi6xOoHUKETP6LB4Dhii2AAX8m1c77
+      MISTRAL_API_KEY: NEW_KEY_HERE
     depends_on:
       kafka:
         condition: service_started
