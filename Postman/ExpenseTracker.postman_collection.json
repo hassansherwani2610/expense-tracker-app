@@ -1,0 +1,204 @@
+{
+  "info": {
+    "name": "Expense Tracker Microservices APIs",
+    "_postman_id": "d4d7f2b0-4f41-4d88-9b4d-123456789abc",
+    "description": "Expense Tracker Project APIs routed through Kong Gateway.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Service",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"hassan\",\n  \"password\": \"123456\",\n  \"first_name\": \"Hassan\",\n  \"last_name\": \"Sherwani\",\n  \"phone_number\": 923001112233,\n  \"email\": \"hassan@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/auth/v1/register"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var response = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', response.access_token);",
+                  "pm.collectionVariables.set('refreshToken', response.refresh_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"hassan\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/auth/v1/login"
+            }
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/auth/v1/validate"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Service",
+      "item": [
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/user/v1/getUser"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Expense Service",
+      "item": [
+        {
+          "name": "Add Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 9900,\n  \"merchant\": \"KGFC\",\n  \"currency\": \"PKR\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/expense/v1/addExpense"
+            }
+          }
+        },
+        {
+          "name": "Get Expenses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/expense/v1/getExpense"
+            }
+          }
+        },
+        {
+          "name": "Update Expense",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"external_id\": \"PASTE_EXTERNAL_ID_HERE\",\n  \"amount\": 4600,\n  \"merchant\": \"OPTP-LPC-GPL-UBIT\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/expense/v1/updateExpense"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Data Science Service",
+      "item": [
+        {
+          "name": "Extract Expense From SMS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Your account has been debited with PKR 7900 at KFC-LFC-LPC using card ****1234\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/ds/message"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    }
+  ]
+}

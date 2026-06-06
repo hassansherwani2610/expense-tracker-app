@@ -1,0 +1,39 @@
+package com.eta.authservice.entities;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Getter
+@Setter
+//@Builder
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "users")
+public class UserInfo {
+
+    @Id
+    @Column(name = "user_id", length = 255)
+    @NonNull
+    private String userId; // Primary key using UUID
+
+    @Column(length = 30, nullable = false, unique = true)
+    private String username; // Username for login
+
+    @Column(nullable = false)
+    private String password; // Hashed password
+
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<UserRole> roles = new HashSet<>(); // User roles for authorization
+}

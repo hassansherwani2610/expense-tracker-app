@@ -1,0 +1,28 @@
+# Node
+**/node_modules/
+frontend/dist
+dist/
+
+# Java
+**/target/
+**/build/
+*.jar
+.gradle/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
