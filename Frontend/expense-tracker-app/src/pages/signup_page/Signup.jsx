@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   FiUser,
   FiMail,
@@ -28,12 +28,22 @@ const Signup = () => {
     confirmPassword: "",
   });
 
-  const [passwordError, setPasswordError] = useState("");
-  const [confirmError, setConfirmError] = useState("");
-
   // Password Regex
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#])[A-Za-z\d@$!%*?&.#]{8,}$/;
+
+  // Derived validation (no useEffect needed)
+  const passwordError =
+    form.password.length > 0 && !passwordRegex.test(form.password)
+      ? "Must contain Capital, Small, Number, Special Character & 8+ characters"
+      : "";
+
+  const confirmError =
+    form.confirmPassword.length > 0
+      ? form.password === form.confirmPassword
+        ? "Passwords match ✓"
+        : "Passwords do not match"
+      : "";
 
   // Handle Input Change
   const handleChange = (e) => {
@@ -42,33 +52,6 @@ const Signup = () => {
       [e.target.name]: e.target.value,
     });
   };
-
-  // Real-time Validation
-  useEffect(() => {
-    // Password Validation
-    if (form.password.length > 0) {
-      if (!passwordRegex.test(form.password)) {
-        setPasswordError(
-          "Must contain Capital, Small, Number, Special Character & 8+ characters"
-        );
-      } else {
-        setPasswordError("");
-      }
-    } else {
-      setPasswordError("");
-    }
-
-    // Confirm Password Validation
-    if (form.confirmPassword.length > 0) {
-      if (form.password !== form.confirmPassword) {
-        setConfirmError("Passwords do not match");
-      } else {
-        setConfirmError("Passwords match ✓");
-      }
-    } else {
-      setConfirmError("");
-    }
-  }, [form.password, form.confirmPassword]);
 
   // Handle Form Submit
   const handleSubmit = async (e) => {
@@ -80,7 +63,7 @@ const Signup = () => {
     }
 
     // Remove confirmPassword before sending to backend
-    const { confirmPassword, ...signupData } = form;
+    const { confirmPassword: _confirmPassword, ...signupData } = form;
 
     try {
       const response = await sendSignupEvent(signupData);
@@ -216,18 +199,14 @@ const Signup = () => {
             id="confirmPassword"
             isPassword={true}
             showPassword={showConfirmPassword}
-            togglePassword={() =>
-              setShowConfirmPassword(!showConfirmPassword)
-            }
+            togglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
           />
 
           {/* Confirm Password Message */}
           {confirmError && (
             <p
               className={`text-sm ${
-                confirmError.includes("✓")
-                  ? "text-green-400"
-                  : "text-red-400"
+                confirmError.includes("✓") ? "text-green-400" : "text-red-400"
               }`}
             >
               {confirmError}
@@ -294,11 +273,10 @@ const InputBox = ({
         className="w-full bg-transparent outline-none text-slate-200 placeholder-slate-400"
       />
 
-      {/* Eye Icon appears only when user has typed something */}
       {isPassword && value.length > 0 && (
         <button
           type="button"
-          onMouseDown={(e) => e.preventDefault()} // Prevent input blur when clicking
+          onMouseDown={(e) => e.preventDefault()}
           onClick={togglePassword}
           className="cursor-pointer text-slate-400 hover:text-teal-300 transition-colors"
         >

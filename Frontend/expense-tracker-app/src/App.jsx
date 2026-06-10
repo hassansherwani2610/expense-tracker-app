@@ -4,7 +4,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 import Background from "./components/background/Background";
 import Footer from "./components/footer/Footer";
@@ -21,17 +21,7 @@ import { Navigate } from "react-router-dom";
 
 /* GLOBAL PAGE ANIMATION */
 const PageWrapper = ({ children }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: 60 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -60 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="w-full"
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className="w-full animate-page">{children}</div>;
 };
 
 /* ROUTES WITH ANIMATION */

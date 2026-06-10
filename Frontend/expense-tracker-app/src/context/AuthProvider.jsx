@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { refreshAccessToken } from "../api/authApi";
 import { setToken } from "../api/axiosPrivate";
-
-const AuthContext = createContext();
+import { AuthContext } from "./AuthContext";
 
 export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
@@ -24,10 +23,8 @@ export const AuthProvider = ({ children }) => {
         const newAccessToken = await refreshAccessToken();
 
         setAccessToken(newAccessToken);
-
         setToken(newAccessToken);
-
-      } catch (error) {
+      } catch {
         console.log("User not logged in");
       } finally {
         setLoading(false);
@@ -50,8 +47,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  return useContext(AuthContext);
 };
