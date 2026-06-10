@@ -1,13 +1,9 @@
 import { useState } from "react";
-import {
-  FiLock,
-  FiEye,
-  FiEyeOff,
-} from "react-icons/fi";
+import { FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { FaRegUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { sendLoginEvent } from "../../api/loginApi";
-import { useAuth } from "../../context/AuthProvider";
+import { useAuth } from "../../hooks/useAuth";
 import { setToken } from "../../api/axiosPrivate";
 import { useEffect } from "react";
 
@@ -38,14 +34,10 @@ const Login = () => {
   };
 
   useEffect(() => {
-
-  if (accessToken) {
-
-    navigate("/dashboard");
-
-  }
-
-}, [accessToken, navigate]);
+    if (accessToken) {
+      navigate("/dashboard");
+    }
+  }, [accessToken, navigate]);
 
   // Handle Login Submit
   const handleSubmit = async (e) => {
@@ -56,7 +48,7 @@ const Login = () => {
 
       // Get Access Token
       const token = response.data.access_token;
-      
+
       // Store in MEMORY
       login(token);
 
@@ -83,7 +75,6 @@ const Login = () => {
 
       // Redirect after login
       navigate("/dashboard");
-
     } catch (error) {
       console.error("Login Failed:", error);
 
@@ -97,10 +88,8 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-
       {/* Card */}
       <div className="w-full max-w-md p-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl transition-all duration-300 hover:shadow-2xl">
-
         {/* Heading */}
         <h1 className="text-3xl font-semibold mb-6 text-center">
           <span className="text-teal-300/90">Welcome</span>{" "}
@@ -109,7 +98,6 @@ const Login = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-
           {/* Username */}
           <div
             className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all duration-300 
@@ -163,11 +151,7 @@ const Login = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="cursor-pointer text-slate-400 hover:text-teal-300 transition-colors"
               >
-                {showPassword ? (
-                  <FiEyeOff size={18} />
-                ) : (
-                  <FiEye size={18} />
-                )}
+                {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
               </button>
             )}
           </div>
@@ -179,7 +163,6 @@ const Login = () => {
           >
             Login
           </button>
-
         </form>
 
         {/* Footer */}
@@ -192,7 +175,6 @@ const Login = () => {
             Sign Up
           </span>
         </p>
-
       </div>
     </div>
   );
