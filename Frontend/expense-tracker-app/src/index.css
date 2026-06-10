@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px) }
-  50% { transform: translateY(20px) }
+
+  0%,
+  100% {
+    transform: translateY(0px)
+  }
+
+  50% {
+    transform: translateY(20px)
+  }
 }
 
 /* GPT: https://chatgpt.com/share/69eb70d5-b6f4-8323-92b5-a4a204e78970 */
@@ -14,7 +21,8 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: #020617; /* slate-950 (much better than pure black) */
+  background: #020617;
+  /* slate-950 (much better than pure black) */
   overflow-x: hidden;
 }
 
@@ -33,21 +41,24 @@ body::after {
   height: 650px;
   border-radius: 50%;
   filter: blur(140px);
-  opacity: 0.12; /* LOWER = less eye strain */
+  opacity: 0.12;
+  /* LOWER = less eye strain */
   z-index: -1;
   pointer-events: none;
 }
 
 /* Teal Glow – Top Left (PRIMARY BRAND) */
 body::before {
-  background: #14b8a6; /* teal-500 */
+  background: #14b8a6;
+  /* teal-500 */
   top: -180px;
   left: -180px;
 }
 
 /* Soft Gold Glow – Right Side (ACCENT) */
 body::after {
-  background: #fbbf24; /* amber-400 */
+  background: #fbbf24;
+  /* amber-400 */
   top: 40%;
   right: -180px;
 }
@@ -55,9 +66,11 @@ body::after {
 .heading-xl {
   font-family: var(--font-heading);
   font-size: 3rem;
-  font-weight: 600; /* was 700 → softer */
+  font-weight: 600;
+  /* was 700 → softer */
   line-height: 1.2;
-  color: #e2e8f0; /* slate-200 instead of white */
+  color: #e2e8f0;
+  /* slate-200 instead of white */
 }
 
 .heading-lg {
@@ -81,7 +94,8 @@ body::after {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.7;
-  color: #94a3b8; /* slate-400 */
+  color: #94a3b8;
+  /* slate-400 */
 }
 
 .text-body-lg {
@@ -97,25 +111,38 @@ body::after {
   font-size: 1rem;
   font-weight: 500;
   letter-spacing: 0.025em;
-  color: #99f6e4; /* soft teal */
+  color: #99f6e4;
+  /* soft teal */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    rgba(20, 184, 166, 0.35),
-    rgba(20, 184, 166, 0.55)
-  );
+  background: linear-gradient(180deg,
+      rgba(20, 184, 166, 0.35),
+      rgba(20, 184, 166, 0.55));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(20, 184, 166, 0.55),
-    rgba(20, 184, 166, 0.75)
-  );
+  background: linear-gradient(180deg,
+      rgba(20, 184, 166, 0.55),
+      rgba(20, 184, 166, 0.75));
 }
 
 * {
   scrollbar-color: rgba(20, 184, 166, 0.55) #020617;
+}
+
+@keyframes pageFade {
+  0% {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-page {
+  animation: pageFade 0.35s ease-in-out;
 }
