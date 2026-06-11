@@ -18,7 +18,37 @@ jobs:
         uses: actions/checkout@v4
 
       # ─────────────────────────────
-      # 2. Login to Docker Hub
+      # 2. Setup Java (for Spring Boot services)
+      # ─────────────────────────────
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # ─────────────────────────────
+      # 3. Build ALL backend JARs first
+      # ─────────────────────────────
+      - name: Build Auth Service
+        working-directory: backend/expense-tracker-app/authservice
+        run: ./gradlew build -x test
+
+      - name: Build User Service
+        working-directory: backend/userservice/userservice
+        run: ./gradlew build -x test
+
+      - name: Build Expense Service
+        working-directory: backend/expenseservice/expenseservice
+        run: ./gradlew build -x test
+
+      # ─────────────────────────────
+      # 4. Setup Docker Buildx
+      # ─────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ─────────────────────────────
+      # 5. Login to Docker Hub
       # ─────────────────────────────
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -27,13 +57,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # ─────────────────────────────
-      # 3. Set up Docker Buildx
-      # ─────────────────────────────
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # ─────────────────────────────
-      # 4. Build & Push Backend (Auth Service example)
+      # 6. Build & Push Auth Service
       # ─────────────────────────────
       - name: Build & Push Auth Service
         uses: docker/build-push-action@v5
@@ -46,7 +70,7 @@ jobs:
             hassansherwani10/expense-tracker-app:authservice-${{ github.sha }}
 
       # ─────────────────────────────
-      # 5. Build & Push User Service
+      # 7. Build & Push User Service
       # ─────────────────────────────
       - name: Build & Push User Service
         uses: docker/build-push-action@v5
@@ -59,7 +83,7 @@ jobs:
             hassansherwani10/expense-tracker-app:userservice-${{ github.sha }}
 
       # ─────────────────────────────
-      # 6. Build & Push Expense Service
+      # 8. Build & Push Expense Service
       # ─────────────────────────────
       - name: Build & Push Expense Service
         uses: docker/build-push-action@v5
@@ -72,7 +96,7 @@ jobs:
             hassansherwani10/expense-tracker-app:expenseservice-${{ github.sha }}
 
       # ─────────────────────────────
-      # 7. Build & Push DS Service
+      # 9. Build & Push DS Service
       # ─────────────────────────────
       - name: Build & Push DS Service
         uses: docker/build-push-action@v5

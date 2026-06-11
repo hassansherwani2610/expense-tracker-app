@@ -5,7 +5,7 @@ FROM eclipse-temurin:21.0.10_7-jdk
 WORKDIR /app
 
 # Copy the built Spring Boot JAR file into the container
-COPY build/libs/expense-service.jar app.jar
+COPY build/libs/*.jar app.jar
 
 # Expose Spring Boot default port
 EXPOSE 9820
