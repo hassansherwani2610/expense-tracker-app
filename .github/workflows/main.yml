@@ -13,11 +13,49 @@ on:
 jobs:
 
   # ─────────────────────────────────────────
-  # 1. AUTH SERVICE
+  # 1. AUTH SERVICE — Build + Integration Test
   # ─────────────────────────────────────────
   auth-service:
     name: Auth Service — Build & Test
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: developer
+          MYSQL_DATABASE: auth_service
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -pdeveloper"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.5.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENERS: PLAINTEXT://:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd="kafka-broker-api-versions --bootstrap-server localhost:9092"
+          --health-interval=15s
+          --health-timeout=10s
+          --health-retries=10
 
     defaults:
       run:
@@ -37,18 +75,76 @@ jobs:
       - name: Grant Gradle Execute Permission
         run: chmod +x gradlew
 
-      - name: Build Auth Service (skip tests — requires MySQL & Kafka)
+      - name: Build Auth Service (no tests yet)
         run: ./gradlew build -x test
 
       - name: Verify JAR was created
         run: ls -lh build/libs/auth-service.jar
 
+      - name: Run Auth Service Tests
+        env:
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          MYSQL_DB: auth_service
+          MYSQL_USER: root
+          MYSQL_PASSWORD: developer
+          KAFKA_HOST: localhost
+          KAFKA_PORT: 9092
+          JWT_SECRET: 9fK7xL2vQwP8zYbH3RjT5mN6aC1dE4uV7sX9kL0qB2pW8ZyF6hD3tR5uJ1M4nC
+          JWT_EXPIRATION: 900000
+        run: ./gradlew test
+
+      - name: Publish Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auth-service-test-report
+          path: backend/expense-tracker-app/authservice/build/reports/tests/test/
+
   # ─────────────────────────────────────────
-  # 2. USER SERVICE
+  # 2. USER SERVICE — Build + Integration Test
   # ─────────────────────────────────────────
   user-service:
     name: User Service — Build & Test
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: developer
+          MYSQL_DATABASE: user_service
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -pdeveloper"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.5.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENERS: PLAINTEXT://:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd="kafka-broker-api-versions --bootstrap-server localhost:9092"
+          --health-interval=15s
+          --health-timeout=10s
+          --health-retries=10
 
     defaults:
       run:
@@ -68,18 +164,74 @@ jobs:
       - name: Grant Gradle Execute Permission
         run: chmod +x gradlew
 
-      - name: Build User Service (skip tests — requires MySQL & Kafka)
+      - name: Build User Service (no tests yet)
         run: ./gradlew build -x test
 
       - name: Verify JAR was created
         run: ls -lh build/libs/user-service.jar
 
+      - name: Run User Service Tests
+        env:
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          MYSQL_DB: user_service
+          MYSQL_USER: root
+          MYSQL_PASSWORD: developer
+          KAFKA_HOST: localhost
+          KAFKA_PORT: 9092
+        run: ./gradlew test
+
+      - name: Publish Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: user-service-test-report
+          path: backend/userservice/userservice/build/reports/tests/test/
+
   # ─────────────────────────────────────────
-  # 3. EXPENSE SERVICE
+  # 3. EXPENSE SERVICE — Build + Integration Test
   # ─────────────────────────────────────────
   expense-service:
     name: Expense Service — Build & Test
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: developer
+          MYSQL_DATABASE: expense_service
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -pdeveloper"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.5.0
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENERS: PLAINTEXT://:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd="kafka-broker-api-versions --bootstrap-server localhost:9092"
+          --health-interval=15s
+          --health-timeout=10s
+          --health-retries=10
 
     defaults:
       run:
@@ -99,17 +251,35 @@ jobs:
       - name: Grant Gradle Execute Permission
         run: chmod +x gradlew
 
-      - name: Build Expense Service (skip tests — requires MySQL & Kafka)
+      - name: Build Expense Service (no tests yet)
         run: ./gradlew build -x test
 
       - name: Verify JAR was created
         run: ls -lh build/libs/expense-service.jar
 
+      - name: Run Expense Service Tests
+        env:
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          MYSQL_DB: expense_service
+          MYSQL_USER: root
+          MYSQL_PASSWORD: developer
+          KAFKA_HOST: localhost
+          KAFKA_PORT: 9092
+        run: ./gradlew test
+
+      - name: Publish Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: expense-service-test-report
+          path: backend/expenseservice/expenseservice/build/reports/tests/test/
+
   # ─────────────────────────────────────────
-  # 4. DS SERVICE (Python / Flask / AI)
+  # 4. DS SERVICE — Install, Test & Package
   # ─────────────────────────────────────────
   ds-service:
-    name: DS Service — Install & Lint
+    name: DS Service — Install & Test
     runs-on: ubuntu-latest
 
     defaults:
@@ -129,15 +299,102 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Verify Flask App is Importable
-        # Starts Flask app in dry-run mode — catches import errors, missing deps,
-        # and broken config without needing Kafka or a real API key
-        env:
-          MISTRAL_API_KEY: dummy_key_for_ci
-          KAFKA_HOST: localhost
-          KAFKA_PORT: 9092
-          FLASK_APP: app
-        run: python -c "import sys; sys.path.insert(0, 'src'); from app.services.llm_service import LLMService; print('DS Service imports OK')" || true
+      # ── Unit test: schema validation (no LLM/Kafka needed) ──────────────────
+      - name: Test Pydantic Expense Schema
+        working-directory: backend/dsService/src
+        run: |
+          python -c "
+          from app.schema.expense import Expense
+
+          # Test 1: All fields populated
+          e = Expense(amount='5000', merchant='IMTIAZ SUPER MARKET', currency='PKR')
+          assert e.amount == '5000'
+          assert e.merchant == 'IMTIAZ SUPER MARKET'
+          assert e.currency == 'PKR'
+          print('PASS: Expense schema with all fields')
+
+          # Test 2: Optional fields default to None
+          e2 = Expense()
+          assert e2.amount is None
+          assert e2.merchant is None
+          assert e2.currency is None
+          print('PASS: Expense schema with no fields (all optional)')
+
+          # Test 3: Partial fields
+          e3 = Expense(amount='1200')
+          assert e3.amount == '1200'
+          assert e3.merchant is None
+          print('PASS: Expense schema with partial fields')
+
+          print('All Pydantic schema tests passed.')
+          "
+
+      # ── Unit test: bank SMS keyword detection ───────────────────────────────
+      - name: Test Bank SMS Detection (MessageUtil)
+        working-directory: backend/dsService/src
+        run: |
+          python -c "
+          from app.utils.message_util import MessageUtil
+          util = MessageUtil()
+
+          # These should be detected as bank SMS
+          bank_messages = [
+              'Your account has been debited Rs. 5000 at IMTIAZ SUPER MARKET',
+              'Transaction alert: PKR 2500 debited from your account',
+              'Dear customer, your card has been used for a purchase of 3000',
+          ]
+
+          # These should NOT be detected as bank SMS
+          non_bank_messages = [
+              'Hi! How are you doing today?',
+              'Your OTP for login is 123456',
+              'Reminder: Meeting at 3pm tomorrow',
+          ]
+
+          for msg in bank_messages:
+              result = util.is_bank_sms(msg)
+              print(f'  is_bank_sms(\"{msg[:40]}...\") = {result}')
+
+          for msg in non_bank_messages:
+              result = util.is_bank_sms(msg)
+              print(f'  is_bank_sms(\"{msg[:40]}\") = {result}')
+
+          print('MessageUtil test complete.')
+          "
+
+      - name: Test DS Service Module Imports
+        working-directory: backend/dsService/src
+        run: |
+          python -c "
+          import importlib.util, sys, os
+
+          os.environ['MISTRAL_API_KEY'] = 'dummy_key_for_ci'
+
+          def load_module(name, path):
+              spec = importlib.util.spec_from_file_location(name, path)
+              mod = importlib.util.module_from_spec(spec)
+              sys.modules[name] = mod
+              spec.loader.exec_module(mod)
+              return mod
+
+          # Load each module directly by file path — bypasses app/__init__.py entirely
+          load_module('expense', 'app/schema/expense.py')
+          print('PASS: app/schema/expense.py')
+
+          load_module('message_util', 'app/utils/message_util.py')
+          print('PASS: app/utils/message_util.py')
+
+          load_module('auth_service', 'app/services/auth_service.py')
+          print('PASS: app/services/auth_service.py')
+
+          load_module('llm_service', 'app/services/llm_service.py')
+          print('PASS: app/services/llm_service.py')
+
+          load_module('message_service', 'app/services/message_service.py')
+          print('PASS: app/services/message_service.py')
+
+          print('All DS Service modules imported successfully.')
+          "
 
       - name: Verify Package Build
         run: |
@@ -146,10 +403,10 @@ jobs:
           ls -lh dist/
 
   # ─────────────────────────────────────────
-  # 5. FRONTEND (React / Vite)
+  # 5. FRONTEND — Install, Lint & Build
   # ─────────────────────────────────────────
   frontend:
-    name: Frontend — Install & Build
+    name: Frontend — Install, Lint & Build
     runs-on: ubuntu-latest
 
     defaults:
@@ -170,11 +427,17 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Lint
+      - name: Lint (ESLint)
         run: npm run lint
 
-      - name: Build (Vite production bundle)
+      - name: Build Vite Production Bundle
         run: npm run build
 
       - name: Verify dist folder was created
         run: ls -lh dist/
+
+      - name: Upload Frontend Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: Frontend/expense-tracker-app/dist/

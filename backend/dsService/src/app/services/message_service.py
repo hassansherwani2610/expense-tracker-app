@@ -4,10 +4,12 @@ from app.services.llm_service import LLMService
 class MessageService:
     def __init__(self):
         self.message_util = MessageUtil()
-        self.llm_service = LLMService()
 
     def process_message(self, message):
-        if self.message_util.is_bank_sms(message):
-            return self.llm_service.run_LLM(message)
-        else:
+
+        if not self.message_util.is_bank_sms(message):
             return None
+
+        llm_service = LLMService()
+
+        return llm_service.run_LLM(message)
