@@ -19,7 +19,6 @@ jobs:
     name: Auth Service — Build & Test
     runs-on: ubuntu-latest
 
-    # Spin up real MySQL + Kafka inside the CI runner
     services:
       mysql:
         image: mysql:8.0
@@ -82,7 +81,6 @@ jobs:
       - name: Verify JAR was created
         run: ls -lh build/libs/auth-service.jar
 
-      # Now run tests WITH live MySQL + Kafka available
       - name: Run Auth Service Tests
         env:
           MYSQL_HOST: localhost
@@ -92,14 +90,13 @@ jobs:
           MYSQL_PASSWORD: developer
           KAFKA_HOST: localhost
           KAFKA_PORT: 9092
-          # Use the same JWT secret from your application.properties
           JWT_SECRET: 9fK7xL2vQwP8zYbH3RjT5mN6aC1dE4uV7sX9kL0qB2pW8ZyF6hD3tR5uJ1M4nC
           JWT_EXPIRATION: 900000
         run: ./gradlew test
 
       - name: Publish Test Report
         uses: actions/upload-artifact@v4
-        if: always()   # upload even if tests fail — so you can read the report
+        if: always()
         with:
           name: auth-service-test-report
           path: backend/expense-tracker-app/authservice/build/reports/tests/test/
