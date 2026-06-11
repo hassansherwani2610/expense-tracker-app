@@ -365,28 +365,37 @@ jobs:
           print('MessageUtil test complete.')
           "
 
-      # ── Import test: individual modules only (avoids Flask app __init__.py
-      #    which tries to connect to Kafka on import) ──────────────────────────
       - name: Test DS Service Module Imports
         working-directory: backend/dsService/src
-        env:
-          MISTRAL_API_KEY: dummy_key_for_ci
         run: |
           python -c "
-          import sys, os
-          sys.path.insert(0, '.')
+          import importlib.util, sys, os
 
-          # These modules are safe to import — no side effects on load
-          from app.schema.expense import Expense
-          from app.utils.message_util import MessageUtil
-          from app.services.auth_service import AuthService
+          os.environ['MISTRAL_API_KEY'] = 'dummy_key_for_ci'
 
-          # LLMService reads MISTRAL_API_KEY in __init__, not at import time,
-          # so this is safe as long as the env var is set
-          from app.services.llm_service import LLMService
+          def load_module(name, path):
+              spec = importlib.util.spec_from_file_location(name, path)
+              mod = importlib.util.module_from_spec(spec)
+              sys.modules[name] = mod
+              spec.loader.exec_module(mod)
+              return mod
 
-          # Do NOT import from app (app/__init__.py) — it connects to
-          # Kafka immediately on import, which has no broker in CI
+          # Load each module directly by file path — bypasses app/__init__.py entirely
+          load_module('expense', 'app/schema/expense.py')
+          print('PASS: app/schema/expense.py')
+
+          load_module('message_util', 'app/utils/message_util.py')
+          print('PASS: app/utils/message_util.py')
+
+          load_module('auth_service', 'app/services/auth_service.py')
+          print('PASS: app/services/auth_service.py')
+
+          load_module('llm_service', 'app/services/llm_service.py')
+          print('PASS: app/services/llm_service.py')
+
+          load_module('message_service', 'app/services/message_service.py')
+          print('PASS: app/services/message_service.py')
+
           print('All DS Service modules imported successfully.')
           "
 
