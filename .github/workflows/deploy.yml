@@ -1,109 +1,185 @@
-name: Expense Tracker CD
+name: Expense Tracker CD — Build & Push Docker Images
 
 on:
   push:
     branches:
-      - main
+      - main   # Only deploy on main, not develop
 
 jobs:
-  build-and-push:
-    name: Build & Push Docker Images
+
+  # ─────────────────────────────────────────
+  # 1. AUTH SERVICE — Build & Push
+  # ─────────────────────────────────────────
+  push-auth-service:
+    name: Auth Service — Docker Build & Push
     runs-on: ubuntu-latest
 
     steps:
-      # ─────────────────────────────
-      # 1. Checkout Code
-      # ─────────────────────────────
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ─────────────────────────────
-      # 2. Setup Java (for Spring Boot services)
-      # ─────────────────────────────
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
 
-      # ─────────────────────────────
-      # 3. Build ALL backend JARs first
-      # ─────────────────────────────
-      - name: Build Auth Service
+      - name: Grant Gradle Execute Permission
         working-directory: backend/expense-tracker-app/authservice
-        run: ./gradlew build -x test
+        run: chmod +x gradlew
 
-      - name: Build User Service
-        working-directory: backend/userservice/userservice
-        run: ./gradlew build -x test
+      - name: Build Auth Service JAR
+        working-directory: backend/expense-tracker-app/authservice
+        run: ./gradlew bootJar -x test
 
-      - name: Build Expense Service
-        working-directory: backend/expenseservice/expenseservice
-        run: ./gradlew build -x test
+      - name: Verify JAR
+        working-directory: backend/expense-tracker-app/authservice
+        run: ls -lh build/libs/auth-service.jar
 
-      # ─────────────────────────────
-      # 4. Setup Docker Buildx
-      # ─────────────────────────────
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # ─────────────────────────────
-      # 5. Login to Docker Hub
-      # ─────────────────────────────
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # ─────────────────────────────
-      # 6. Build & Push Auth Service
-      # ─────────────────────────────
-      - name: Build & Push Auth Service
+      - name: Build & Push Auth Service Image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend/expense-tracker-app/authservice
-          file: ./backend/expense-tracker-app/authservice/Dockerfile
+          context: backend/expense-tracker-app/authservice
+          dockerfile: backend/expense-tracker-app/authservice/Dockerfile
           push: true
           tags: |
-            hassansherwani10/expense-tracker-app:authservice-latest
-            hassansherwani10/expense-tracker-app:authservice-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:${{ github.sha }}
 
-      # ─────────────────────────────
-      # 7. Build & Push User Service
-      # ─────────────────────────────
-      - name: Build & Push User Service
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend/userservice/userservice
-          file: ./backend/userservice/userservice/Dockerfile
-          push: true
-          tags: |
-            hassansherwani10/expense-tracker-app:userservice-latest
-            hassansherwani10/expense-tracker-app:userservice-${{ github.sha }}
+  # ─────────────────────────────────────────
+  # 2. USER SERVICE — Build & Push
+  # ─────────────────────────────────────────
+  push-user-service:
+    name: User Service — Docker Build & Push
+    runs-on: ubuntu-latest
 
-      # ─────────────────────────────
-      # 8. Build & Push Expense Service
-      # ─────────────────────────────
-      - name: Build & Push Expense Service
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend/expenseservice/expenseservice
-          file: ./backend/expenseservice/expenseservice/Dockerfile
-          push: true
-          tags: |
-            hassansherwani10/expense-tracker-app:expenseservice-latest
-            hassansherwani10/expense-tracker-app:expenseservice-${{ github.sha }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      # ─────────────────────────────
-      # 9. Build & Push DS Service
-      # ─────────────────────────────
-      - name: Build & Push DS Service
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant Gradle Execute Permission
+        working-directory: backend/userservice/userservice
+        run: chmod +x gradlew
+
+      - name: Build User Service JAR
+        working-directory: backend/userservice/userservice
+        run: ./gradlew bootJar -x test
+
+      - name: Verify JAR
+        working-directory: backend/userservice/userservice
+        run: ls -lh build/libs/user-service.jar
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push User Service Image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend/dsService
-          file: ./backend/dsService/Dockerfile
+          context: backend/userservice/userservice
+          dockerfile: backend/userservice/userservice/Dockerfile
           push: true
           tags: |
-            hassansherwani10/expense-tracker-app:dsservice-latest
-            hassansherwani10/expense-tracker-app:dsservice-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/user-service:${{ github.sha }}
+
+  # ─────────────────────────────────────────
+  # 3. EXPENSE SERVICE — Build & Push
+  # ─────────────────────────────────────────
+  push-expense-service:
+    name: Expense Service — Docker Build & Push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant Gradle Execute Permission
+        working-directory: backend/expenseservice/expenseservice
+        run: chmod +x gradlew
+
+      - name: Build Expense Service JAR
+        working-directory: backend/expenseservice/expenseservice
+        run: ./gradlew bootJar -x test
+
+      - name: Verify JAR
+        working-directory: backend/expenseservice/expenseservice
+        run: ls -lh build/libs/expense-service.jar
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Expense Service Image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/expenseservice/expenseservice
+          dockerfile: backend/expenseservice/expenseservice/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/expense-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/expense-service:${{ github.sha }}
+
+  # ─────────────────────────────────────────
+  # 4. DS SERVICE — Build & Push
+  # ─────────────────────────────────────────
+  push-ds-service:
+    name: DS Service — Docker Build & Push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install setuptools & Build Distribution
+        working-directory: backend/dsService
+        run: |
+          pip install setuptools
+          python setup.py sdist
+          ls -lh dist/
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push DS Service Image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/dsService
+          dockerfile: backend/dsService/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ds-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/ds-service:${{ github.sha }}
