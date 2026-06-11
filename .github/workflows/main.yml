@@ -72,8 +72,8 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Make Gradle executable (global fix)
-        run: find backend -name gradlew -exec chmod +x {} \;
+      - name: Grant Gradle Execute Permission
+        run: chmod +x gradlew
 
       - name: Build Auth Service (no tests yet)
         run: ./gradlew build -x test
@@ -161,8 +161,8 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Make Gradle executable (global fix)
-        run: find backend -name gradlew -exec chmod +x {} \;
+      - name: Grant Gradle Execute Permission
+        run: chmod +x gradlew
 
       - name: Build User Service (no tests yet)
         run: ./gradlew build -x test
@@ -248,8 +248,8 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Make Gradle executable (global fix)
-        run: find backend -name gradlew -exec chmod +x {} \;
+      - name: Grant Gradle Execute Permission
+        run: chmod +x gradlew
 
       - name: Build Expense Service (no tests yet)
         run: ./gradlew build -x test
